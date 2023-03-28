@@ -152,6 +152,8 @@ async def main():
                         help='number of buses in different points for every route')
     parser.add_argument('-id', '--emulator_id', type=str, required=True,
                         help='some unique combination to understand, which program send data, if it is many emulator instances')
+    parser.add_argument('-wn', '--websockets_number', type=LimitedInt(1, 20), default=5,
+                        help='number of websockets connections, from 1 to 20, default 5')
     parser.add_argument('-t', '--refresh_timeout', type=LimitedInt(0, 60), default=1,
                         help='send data every "refresh_timeout" seconds')
     parser.add_argument('-v', '--verbosity', type=int, default=0, choices=range(0, 51, 10),
@@ -162,14 +164,21 @@ async def main():
     delta_start = random.randint(0, 1000)  # random start delta if many emulators run
 
     logging.basicConfig(level=args.verbosity)
+    send_channels = []
+    receive_channels = []
 
     async with trio.open_nursery() as nursery:
-        send_channel, receive_channel = trio.open_memory_channel(max_buffer_size=0)
-        nursery.start_soon(send_updates, args.server, receive_channel)
+        for websocket_number in range(args.websockets_number):
+            send_channel, receive_channel = trio.open_memory_channel(max_buffer_size=0)
+            send_channels.append(send_channel)
+            receive_channels.append(receive_channel)
+        for receive_channel in receive_channels:
+            nursery.start_soon(send_updates, args.server, receive_channel)
         for route in load_routes(routes_number=args.routes_number):
             for bus_index in range(args.buses_per_route):
                 bus_id = generate_bus_id(args.emulator_id, route['name'], bus_index)
                 delta = delta_start + bus_index * delta_multiplier
+                send_channel = random.choice(send_channels)
                 nursery.start_soon(run_bus, send_channel, bus_id, route, delta, args.refresh_timeout)
 
 

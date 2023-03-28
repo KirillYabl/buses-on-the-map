@@ -1,6 +1,7 @@
 import argparse
 import contextlib
 import functools
+import glob
 import os
 import json
 import random
@@ -27,15 +28,9 @@ def load_routes(directory_path: str = 'routes', routes_number: int = 0):
     if routes_number <= 0:
         routes_number = 10 ** 9
 
-    routes_added = 0
-    for filename in os.listdir(directory_path):
-        if routes_added >= routes_number:
-            break
-        if filename.endswith(".json"):
-            routes_added += 1
-            filepath = os.path.join(directory_path, filename)
-            with open(filepath, 'r', encoding='utf8') as file:
-                yield json.load(file)
+    for filename in glob.glob(os.path.join(directory_path, '*.json'))[:routes_number]:
+        with open(filename, 'r', encoding='utf8') as file:
+            yield json.load(file)
 
 
 async def run_bus(send_channel: trio.MemorySendChannel, bus_id: str, route: dict, delta: int, sleep: int):

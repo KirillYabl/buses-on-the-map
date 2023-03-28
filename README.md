@@ -29,6 +29,8 @@ python fake_bus.py [-h] -server SERVER -rn ROUTES_NUMBER -b BUSES_PER_ROUTE -id 
 
 `-id EMULATOR_ID, --emulator_id EMULATOR_ID` - уникальный id эмулятора при запуске нескольких эмуляторов, для понимания инициатора сообщения при логировании
 
+`-wn WEBSOCKETS_NUMBER, --websockets_number WEBSOCKETS_NUMBER` - число сокетов в эмуляторе, от 1 до 20, по умолчанию 5
+
 `-t REFRESH_TIMEOUT, --refresh_timeout REFRESH_TIMEOUT` - отправлять новую точку каждые REFRESH_TIMEOUT секунд
 
 `-v {0,10,20,30,40,50}, --verbosity {0,10,20,30,40,50}` - уровень логирования (по умолчанию 0 - без логирования)
